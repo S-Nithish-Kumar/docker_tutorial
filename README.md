@@ -174,6 +174,11 @@ Format:
 >     ```docker container run -it -v /home/nithish/docker_tutorial/my_code/source:/my_source_code my_image```  
 >     **Format:**   
       ```docker container run -it -v <source_folder>:<destination_folder> <image_name>```
+>   * Once the folder is mounted, new file can be created. And this file will get reflected in the local storage as well.  
+>   - However, any file created will be created under ***root*** user and cannot be accessed without ***root*** previlege.
+
+> [!NOTE]  
+By default, all commands executed in docker are under ***root*** previlege.
 
 
 
@@ -203,6 +208,6 @@ Format:
 
 
 
-=======
-# docker_tutorial
->>>>>>> 27e6bc8d392e2d262a870bcb67badc61030bdb70
+
+
+
