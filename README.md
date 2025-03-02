@@ -54,7 +54,7 @@ This will download the ***get-docker.sh*** script
 ```docker image pull <image_name:tag> ```  
 or   
 ```docker pull <image_name:tag>```
-- name - Similar to gitub Repository
+- image_name - Similar to gitub Repository
 + tag - It's like Variant
 
 ### 3. Deleting a docker image
@@ -174,8 +174,18 @@ Format:
 >     ```docker container run -it -v /home/nithish/docker_tutorial/my_code/source:/my_source_code my_image```  
 >     **Format:**   
       ```docker container run -it -v <source_folder>:<destination_folder> <image_name>```
->   * Once the folder is mounted, new file can be created. And this file will get reflected in the local storage as well.  
->   - However, any file created will be created under ***root*** user and cannot be accessed without ***root*** previlege.
+>   * Once the folder is mounted, new file (here named as ***new_file.yaml***) can be created inside the docker container. And this file will get reflected in the local storage as well.  
+>  
+>       **Folder Structure:**  
+├── my_code  
+│   └── source  
+│       ├── ***new_file.yaml***   
+│       └── something.py  
+├── my_project  
+│   ├── config  
+│   │   └── my_config.yaml  
+│   └── Dockerfile  
+>   - However, any file created will be created under ***root*** user and cannot be accessed without ***root*** previlege. 
 
 > [!NOTE]  
 By default, all commands executed in docker are under ***root*** previlege.
