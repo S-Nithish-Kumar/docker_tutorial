@@ -1,0 +1,2 @@
+# This file can be accessed by user with ID 1000
+# because user with ID 1000 created this file

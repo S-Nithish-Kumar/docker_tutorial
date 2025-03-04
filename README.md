@@ -190,6 +190,118 @@ Format:
 > [!NOTE]  
 By default, all commands executed in docker are under ***root*** previlege.
 
+## Crafting Dockerfile 
+> ### Overview  of the section
+> Source: Crafting your Dockerfile - [Video 2 link](https://youtu.be/RbP5cARP-SM?t=0s)  
+>
+> This section focuses on the following:  
+> 1. Create an image with graphic tools built-in (such as rviz, gazebo).   
+Note: The previously used base image ***ros:humble*** does not contain these graphic tools built-in but could be downloaded inside the container if needed.
+> 2. Provide ***user*** previlege while using docker. i.e., execute commands as regular user.  
+> 3. ***Network configuration*** while lauching the container.
+
+> [!NOTE]  
+> Dockerfile from previous sections will be modified to meet the objectives as listed in the overview section.
+
+1. **Change ROS Base Image Containing Graphic Tools**  
+Change the following command:  
+~~```FROM ros:humble```~~ -->  
+```FROM osrf/ros:humble-desktop-full```
+
+2. **Create a non-root user**  
+Add the following commands in the ***Dockerfile***:  
+   ```
+   ARG USERNAME=ros
+
+   ARG USER_UID=1000
+   ARG USER_GID=$USER_UID
+
+
+   # Create a non-root user
+
+   RUN groupadd -gid $USER_GID $USERNAME\  
+   && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \  
+   && mkdir /home/$USERNAME/.config && chown $USER_UID:$USER_GID /home/$USERNAME/.config
+   ```
+
+   > [!NOTE]  
+   > + **ARG** are arguments and can be changed during Image building process.
+   > - Usually, in base computer, user is created during Linux installation and by default the UID **1000** is assigned.
+   > + For consequent users that are created, the UID will be incremented by 1.  
+   > * **-s /bin/bash** sets the user's login shell to bash.  
+   > - **-m** creates the user's home directory if it doesn't exist.
+
+3. **Run the image in a container with user previlege**  
+   ```
+   docker container run -it --user ros -v /home/nithish/docker_tutorial/my_code/source:/my_source_code my_image
+   ```
+
+   **Format:**  
+   ```
+   docker container run -it --user <user_name> -v <source_folder>:<destination_folder> <image_name>
+   ```
+
+   > ![Note]  
+   Check for the **user name** in **Dockerfile**
+
+4. Now whenever a file is created under this user name (USERID: 1000), it can accessed both by the docker container and local computer **without** ***sudo*** previlege. Note, this is possible only because the **USERID** of the local computer is also **1000**.
+
+   - To demonstrate this, a new file named ***newer_file.txt*** is created.
+
+     **Folder Structure:**  
+   ├── my_code  
+│   └── source  
+│       ├── ***newer_file.txt***  
+│       ├── new_file.yaml  
+│       └── something.py  
+├── my_project  
+│   ├── config  
+│   │   └── my_config.yaml  
+│   └── Dockerfile  
+
+
+5. **Set up sudo**
+Add the following command in the **Dockerfile** to provide ***sudo*** access to the **non-root user**.
+   ```
+   RUN apt-get update \  
+   && apt-get install -y sudo \
+   && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\  
+   && chmod 0440 /etc/sudoers.d/$USERNAME \
+   && rm -rf /var/lib/apt/lists/*
+   ```
+
+6. With the sudo previlege, the non-root user can create a file sudo access. Means the file can be accessed by the docker container and the local computer only with sudo previlege.
+
+   - To demonstrate this, a new file named ***test.txt*** is created.
+
+      **Format Structure:**  
+   ├── my_code  
+│   └── source  
+│       ├── newer_file.txt  
+│       ├── new_file.yaml  
+│       ├── something.py  
+│       └── ***test.txt***  
+├── my_project  
+│   ├── config  
+│   │   └── my_config.yaml  
+│   └── Dockerfile  
+
+7. **Network configuration while starting the containter**
+   ```
+   docker container run -it --user ros --network=host --ipc=host -v /home/nithish/docker_tutorial/my_code/source:/my_source_code my_image
+   ```
+
+   - --network=host; Allows host's network interface to be accessed
+   + --ipc=host; Inter-Process Communication enables communication between container and host computer.
+
+
+
+
+
+
+
+
+
 
 
 
