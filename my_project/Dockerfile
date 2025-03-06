@@ -7,7 +7,7 @@ COPY config/ /site_config/
 
 ARG USERNAME=ros
 
-ARG USER_UID=1000
+ARG USER_UID=1001
 ARG USER_GID=$USER_UID
 
 # Create a non-root user
@@ -22,4 +22,16 @@ RUN apt-get update \
 && chmod 0440 /etc/sudoers.d/$USERNAME \
 && rm -rf /var/lib/apt/lists/*
 
-USER ros
+COPY entrypoint.sh /entrypoint.sh
+
+COPY bashrc /home/${USERNAME}/.bashrc
+
+# Execute entrypoint.sh in /bin/bash
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+
+
+# Pass arguments to the entrypoint.sh file
+# Array of arguments can also be passed
+# Arguments can also be passed directly from the command line while starting the container
+
+CMD ["bash"]

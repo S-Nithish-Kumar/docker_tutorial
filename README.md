@@ -241,7 +241,7 @@ Add the following commands in the ***Dockerfile***:
    docker container run -it --user <user_name> -v <source_folder>:<destination_folder> <image_name>
    ```
 
-   > ![Note]  
+   > [!Note]  
    Check for the **user name** in **Dockerfile**
 
 4. Now whenever a file is created under this user name (USERID: 1000), it can accessed both by the docker container and local computer **without** ***sudo*** previlege. Note, this is possible only because the **USERID** of the local computer is also **1000**.
@@ -293,6 +293,105 @@ Add the following command in the **Dockerfile** to provide ***sudo*** access to 
 
    - --network=host; Allows host's network interface to be accessed
    + --ipc=host; Inter-Process Communication enables communication between container and host computer.
+
+8. **Crafting the entrypoint.sh file**  
+***entrypoint.sh*** allows you to define a script that runs every time the container starts.
+
+   Create a new file named ***entrypoint.sh*** in the same directory where the ***Dockerfile*** is and add the following in it.
+   ```
+   #!/bin/bash
+
+   set -e
+
+   source /opt/ros/$ROS_DISTRO/setup.bash
+
+   echo "Provided arguments: $@"
+
+   exec $@
+   ```
+
+   - **set -e**: Enables "exit on error" mode. If any command in the script fails (returns a non-zero exit code), the script will immediately terminate. This helps ensure errors are not silently ignored.
+
+   + **$@** represents all positional parameters (arguments) provided when running the script. 
+
+9. **Update the Dockerfile to execute the entrypoint.sh file**
+
+   ```
+   COPY entrypoint.sh /entrypoint.sh
+
+   # Execute entrypoint.sh in /bin/bash
+   ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+
+
+   # Pass arguments to the entrypoint.sh file
+   # Array of arguments can also be passed
+   # Arguments can also be passed directly from the command line while starting the container
+
+   CMD ["bash"]
+   ```
+
+   Example command to run the container with argument passed from command line
+   ```
+   docker container run -it --user ros --name carom_container --network=host --ipc=host -v /home/nithish/monocular_object_detection/CAROM:/home/ros/carom my_image ros2 topic list
+   ```
+
+### Providing Docker Container Access to Graphics
+**Steps involved:**  
+1. Provide the docker container access to **X server**, which manages graphical displays on Unix-like systems. 
+   > [!NOTE]   
+The below command should be typed in the base computer.
+- ```xhost +``` Provides access to any client to connect to the X Server
++ ```xhost +local:``` Grants access only for all local users on the machine. ***Use this always***.
+- ```xhost -``` To revoke permissions.
+
+2. Add the following arguments while running the docker container.
+- ```-v /tmp/.X11-unix:/tmp/.X11-unix:rw```
+X11 uses Unix domain sockets (located in /tmp/.X11-unix) for communication between X clients (applications) and the X server (display server). By mounting this directory, the container can communicate with the host's X server to render graphical interfaces.
++ ```--env=DISPLAY``` 
+The DISPLAY variable tells applications where to send their graphical output.   
+For example: **DISPLAY=:0** means the application should render its GUI on the first screen of the host machine.
+
+   **Example command:**
+   ```
+   docker container run -it --user ros --network=host --ipc=host -v /home/nithish/monocular_object_detection/CAROM:/home/ros/carom -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env=DISPLAY my_image
+   ```
+
+3. To check whether graphics is working in docker containter, run ```rviz2```
+
+
+### Sourcing ros and colcon for autocompletion
+1. Create file named ***bashrc*** in the same directory as where the Dockerfile is and insert the following commands.
+   ```
+   source /opt/ros/humble/setup.bash
+   source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+   ```
+
+2. To copy this ***bashrc*** file to the docker image, add the following inside the ***Dockerfile***.  
+```COPY bashrc /home/${USERNAME}/.bashrc```
+
+## Accessing Nvidia Graphics Card in the Docker Container
+1. Install [Nvidia Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) in the local machine.  
+In the terminal of the local machine:  
+   1. Configure the production repository:
+      ```
+      curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+      && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+      sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+      sudo tee /etc/apt/sources.list.d/  nvidia-container-toolkit.list
+       ```
+   2. Update the packages list from the repository:  
+   ``` sudo apt-get update```
+   3. Install the NVIDIA Container Toolkit packages:  
+   ```sudo apt-get install -y nvidia-container-toolkit```
+
+2. Running the docker container with GPU access.  
+Include the argument **--gpus all** while running the docker container.
+```
+docker container run -it --user ros --network=host --ipc=host -v /home/nithish/monocular_object_detection/CAROM:/home/ros/carom -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env=DISPLAY --name carom_container --gpus all my_image
+```
+
+
+
 
 
 
