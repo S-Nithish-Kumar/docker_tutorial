@@ -386,44 +386,38 @@ In the terminal of the local machine:
 
 2. Running the docker container with GPU access.  
 Include the argument **--gpus all** while running the docker container.
-```
-docker container run -it --user ros --network=host --ipc=host -v /home/nithish/monocular_object_detection/CAROM:/home/ros/carom -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env=DISPLAY --name carom_container --gpus all my_image
-```
+   ```
+   docker container run -it --user ros --network=host --ipc=host -v /home/nithish/monocular_object_detection/CAROM:/home/ros/carom -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env=DISPLAY --name carom_container --gpus all my_image
+   ```
 
+## Uploading Docker Image to Docker Hub
+1. Create an account in Docker Hub
+2. Create a new repository in docker hub and change the visibility to public. Note: When a repository in public there is no size limit for the image.
+3. Tag the **image** (in the local computer) with the Docker Hub username and the repository name  
+   ```
+   docker tag carom_image:latest nithishkumars30102000/carom_image:first_version
+   ```
 
+   Format: 
+   ```
+   docker tag <local image_name>:< local tag> <username/repository_name>:<docker_hub_tag>
+   ```
+4. Log In to Docker Hub from the Command Line
+   ``` docker login```
+5. Push the Image to Docker Hub
+   ```
+   docker push nithishkumars30102000/carom_image:first_version
+   ```
 
+**Folder Structure of CAROM Docker file**  
+> .  
+├── autoware_auto_msgs  
+├── bashrc  
+├── Dockerfile  
+└── entrypoint.sh  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The above format is just to show how the file structure and files look like. The main ros2 carom package is not included due to space contraints.
+The main ros2 carom package should also be placed under this tree.
 
 
 
