@@ -420,6 +420,12 @@ The above format is just to show how the file structure and files look like. The
 The main ros2 carom package should also be placed under this tree.
 
 
+## Downloading a Docker Image from Docker Hub
+```
+docker image pull nithishkumars30102000/carom_image:first_version
+```
+
+
 
 
 
