@@ -425,6 +425,22 @@ The main ros2 carom package should also be placed under this tree.
 docker image pull nithishkumars30102000/carom_image:first_version
 ```
 
+## Running the docker container after downloading
+1. Start the container
+   ```
+   docker container run -it --network=host --ipc=host -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env=DISPLAY --gpus all --name carom_containter nithishkumars30102000/carom_image:first_version
+   ```
+2. Under ***carom_ws***, build the packages in the workspace  
+   ``` colcon build ```
+3. Source the workspace  
+   ``` source install/setup.bash```
+4. Source the bashrc   
+   ```~/.bashrc```
+5. Run the tracking.py   
+```ros2 run carom tracking_version3```
+
+
+
 
 
 
